@@ -1,0 +1,48 @@
+name: Build VendeVideoAI APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Make Gradle wrapper executable
+        run: |
+          if [ -f ./gradlew ]; then chmod +x ./gradlew; fi
+
+      - name: Build debug APK
+        run: |
+          if [ -f ./gradlew ]; then
+            ./gradlew assembleDebug
+          elif [ -f ./build.gradle ] || [ -f ./build.gradle.kts ]; then
+            gradle assembleDebug
+          else
+            echo "Android project files are missing. Upload the VendeVideoAI Android source code first."
+            exit 1
+          fi
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VendeVideoAI-debug-apk
+          path: |
+            **/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
