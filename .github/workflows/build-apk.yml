@@ -24,25 +24,17 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Make Gradle wrapper executable
-        run: |
-          if [ -f ./gradlew ]; then chmod +x ./gradlew; fi
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
 
       - name: Build debug APK
-        run: |
-          if [ -f ./gradlew ]; then
-            ./gradlew assembleDebug
-          elif [ -f ./build.gradle ] || [ -f ./build.gradle.kts ]; then
-            gradle assembleDebug
-          else
-            echo "Android project files are missing. Upload the VendeVideoAI Android source code first."
-            exit 1
-          fi
+        run: gradle assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: VendeVideoAI-debug-apk
-          path: |
-            **/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
