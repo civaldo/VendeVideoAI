@@ -20,6 +20,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private var selectedImage: Uri? = null
+    private var screenReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +62,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         status = text("Versão inicial gratuita. A foto é selecionada no aparelho.", 13, Color.DKGRAY)
         root.addView(status)
         setContentView(scroll)
+        screenReady = true
     }
 
     private fun text(value: String, size: Int, color: Int) = TextView(this).apply {
@@ -128,8 +130,13 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         }
         val locale = Locale("pt", "BR")
         tts?.language = locale
+        when (voice.selectedItemPosition) {
+            1 -> { tts?.setPitch(1.18f); tts?.setSpeechRate(0.96f) }
+            2 -> { tts?.setPitch(0.86f); tts?.setSpeechRate(0.94f) }
+            else -> { tts?.setPitch(1.0f); tts?.setSpeechRate(1.0f) }
+        }
         tts?.speak(content, TextToSpeech.QUEUE_FLUSH, null, "vendevideo-script")
-        status.text = "Reproduzindo com a voz disponível no celular."
+        status.text = "Reproduzindo. O estilo altera a entonação; a voz depende do mecanismo instalado."
     }
 
     private fun copyScript() {
@@ -143,7 +150,7 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
         if (ttsReady) {
             val result = tts?.setLanguage(Locale("pt", "BR"))
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                status.text = "Instale dados de voz em português nas configurações de texto para fala do Android."
+                if (screenReady) status.text = "Instale dados de voz em português nas configurações de texto para fala do Android."
             }
         }
     }
